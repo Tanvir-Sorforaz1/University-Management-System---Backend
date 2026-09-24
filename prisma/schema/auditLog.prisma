@@ -1,0 +1,19 @@
+// Audit logs are records of actions performed by users in the system. They help track changes, monitor user activity, and provide an audit trail for accountability and security purposes. Each log entry typically includes information about the action taken, the entity affected, the user who performed the action, and any relevant changes made.
+
+model AuditLog {
+  id            String   @id @default(cuid())
+
+  performedById String?
+  performedBy   User?    @relation("PerformedBy", fields: [performedById], references: [id], onDelete: SetNull)
+
+  action        String   // e.g. "UPDATE_RESULT", "ASSIGN_DEPARTMENT_HEAD", "REFUND_PAYMENT"
+  entity        String   // e.g. "ExamResult", "FacultyProfile", "Payment"
+  entityId      String
+  changes       Json?
+
+  createdAt     DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([performedById])
+  @@map("audit_logs")
+}

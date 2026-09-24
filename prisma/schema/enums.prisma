@@ -1,0 +1,71 @@
+enum Role {
+  STUDENT
+  FACULTY
+  ADMIN
+}
+
+enum AdminType {
+  VC
+  REGISTRAR
+  FINANCE
+  SUPER
+}
+
+enum Department {
+  CSE
+  EEE
+  CIVIL
+}
+
+enum EnrollmentStatus {
+  ENROLLED
+  COMPLETED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum ExamType {
+  QUIZ
+  ASSIGNMENT
+  MIDTERM
+  FINAL
+}
+
+enum Grade {
+  A_PLUS
+  A
+  A_MINUS
+  B_PLUS
+  B
+  B_MINUS
+  C_PLUS
+  C
+  D
+  F
+}
+
+enum PaymentMethod {
+  BKASH
+  STRIPE
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum NotificationType {
+  ENROLLMENT
+  ATTENDANCE
+  RESULT
+  PAYMENT
+  ANNOUNCEMENT
+  GENERAL
+}

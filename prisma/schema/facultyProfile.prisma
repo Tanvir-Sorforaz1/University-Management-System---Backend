@@ -1,0 +1,26 @@
+model FacultyProfile {
+  id                String     @id @default(cuid())
+  userId            String     @unique
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  facultyId         String     @unique
+  department        Department
+  // Exactly one FacultyProfile per department should have this set true —
+  // enforced in admin.service.ts (assignDepartmentHead), not at the DB level.
+  isDepartmentHead  Boolean    @default(false)
+  designation       String?
+  phone             String?
+  avatarUrl         String?
+
+  createdExams        Exam[]       @relation("ExamCreatedBy")
+  markedAttendances   Attendance[] @relation("AttendanceMarkedBy")
+
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  deletedAt         DateTime?
+
+  @@index([department])
+  @@index([department, isDepartmentHead])
+  @@map("faculty_profiles")
+}
+

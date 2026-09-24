@@ -1,0 +1,28 @@
+model StudentProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  studentId       String    @unique          // registration/roll number
+  department      Department                 // set at registration — fixed 3-value enum
+  currentSemester Int       @default(1)       // 1 through 8 — curriculum progression
+
+  phone           String?
+  address         String?
+  dateOfBirth     DateTime?
+  avatarUrl       String?
+
+  enrollments     Enrollment[]
+  attendances     Attendance[]
+  examResults     ExamResult[]
+  fees            Fee[]
+  payments        Payment[]
+  transcript      Transcript?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  @@index([department])
+  @@map("student_profiles")
+}

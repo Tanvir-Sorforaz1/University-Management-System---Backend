@@ -1,0 +1,16 @@
+//transcript is a record of a student's academic performance, including their grades, courses taken, and other relevant information. It serves as an official document that provides a comprehensive overview of a student's educational achievements and progress throughout their academic journey.
+
+model Transcript {
+  id                  String         @id @default(cuid())
+
+  studentId           String         @unique
+  student             StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  cgpa                Float          @default(0)
+  totalCreditsEarned  Float          @default(0)
+
+  updatedAt           DateTime       @updatedAt
+  createdAt           DateTime       @default(now())
+
+  @@map("transcripts")
+}

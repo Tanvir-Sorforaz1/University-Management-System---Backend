@@ -1,0 +1,23 @@
+model Attendance {
+  id            String            @id @default(cuid())
+
+  semesterId    String
+  semester      Semester          @relation(fields: [semesterId], references: [id])
+
+  studentId     String
+  student       StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  date          DateTime
+  status        AttendanceStatus
+//markedById is the id of the faculty who marked the attendance for that student on that date.It is optional because there may be cases where attendance is recorded automatically or by an admin, not a faculty member.
+  markedById    String?
+  //markedby means the faculty who marked the attendance for that student on that date. 
+  markedBy      FacultyProfile?   @relation("AttendanceMarkedBy", fields: [markedById], references: [id])
+
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@unique([semesterId, studentId, date])
+  @@index([studentId])
+  @@map("attendances")
+}

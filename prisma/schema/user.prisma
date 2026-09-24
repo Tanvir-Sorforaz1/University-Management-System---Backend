@@ -1,0 +1,23 @@
+
+model User {
+  id             String    @id @default(cuid())
+  name           String
+  emailVerified  Boolean   @default(false)
+  email          String    @unique
+  password       String
+  role           Role
+  adminType      AdminType?
+  isActive       Boolean   @default(true)
+
+  studentProfile StudentProfile?
+  facultyProfile FacultyProfile?
+  notifications  Notification[]
+  auditLogs      AuditLog[]        @relation("PerformedBy")
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  @@index([role])
+  @@map("users")
+}

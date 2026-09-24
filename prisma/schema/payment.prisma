@@ -1,0 +1,24 @@
+model Payment {
+  id               String        @id @default(cuid())
+
+  feeId            String
+  fee              Fee           @relation(fields: [feeId], references: [id], onDelete: Cascade)
+
+  studentId        String
+  student          StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  amount           Float
+  method           PaymentMethod
+  status           PaymentStatus @default(PENDING)
+  gatewayPaymentId String?       @unique // bKash's paymentID — set at create, needed to call execute later
+  transactionId    String?       @unique // bKash's trxID — only set once execute succeeds
+  gatewayResponse  Json?
+  paidAt           DateTime?
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([studentId])
+  @@index([status])
+  @@map("payments")
+}

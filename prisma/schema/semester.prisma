@@ -1,0 +1,21 @@
+model Semester {
+  id              String   @id @default(cuid())
+  department      Department
+  semesterNumber  Int      // 1 through 8
+  name            String?  // optional label, e.g. "3rd Semester"
+  feeAmount       Float    // BDT amount required to enter this semester
+  creditHours     Int      @default(15) // total credit hours for the whole semester — used for CGPA weighting
+
+  enrollments     Enrollment[]
+  attendances     Attendance[]
+  exams           Exam[]
+  fees            Fee[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  @@unique([department, semesterNumber])
+  @@index([department])
+  @@map("semesters")
+}

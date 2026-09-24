@@ -1,0 +1,24 @@
+model Exam {
+  id             String       @id @default(cuid())
+
+  semesterId     String
+  semester       Semester     @relation(fields: [semesterId], references: [id])
+
+  title          String
+  type           ExamType
+  examDate       DateTime
+  totalMarks     Float
+  weightPercent  Float        // contribution to the semester's final grade
+
+  createdById    String?
+  createdBy      FacultyProfile? @relation("ExamCreatedBy", fields: [createdById], references: [id])
+
+  results        ExamResult[]
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  @@index([semesterId])
+  @@map("exams")
+}
