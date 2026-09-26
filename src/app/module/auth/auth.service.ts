@@ -8,7 +8,7 @@ import { jwtUtils } from "../../utils/jwt.js";
 import type { ILoginPayload, IRegisterStudentPayload, IverifyEmailPayload } from "./auth.interface.js";
 import { Prisma } from "../../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js"; //capital prisma is the generated client, lowercase prisma is the instance of the client
-import { redisClient } from "../../lib/redis.js";
+import { connectRedis, redisClient } from "../../lib/redis.js";
 import ejs from "ejs";
 import path from "path";
 import { transporter } from "../../lib/nodemailer.js";
@@ -74,6 +74,8 @@ const registerStudent = async (payload: IRegisterStudentPayload) => {
 
   const otp = crypto.randomInt(100000, 1000000).toString();
 
+  await connectRedis();
+
   await redisClient.set(otpKeyFor(email), otp, {
     expiration: { type: "EX", value: OTP_EXPIRATION_SECOND },
   });
@@ -120,6 +122,9 @@ const verifyStudentEmail=async(payload:IverifyEmailPayload)=>{
 
     throw new AppError(httpStatus.CONFLICT,"This email is already verified and registerd");
   }
+
+  await connectRedis();
+
   const redisOtp =await redisClient.get(otpKeyFor(email));
   if(!redisOtp){
     throw new AppError(httpStatus.BAD_REQUEST,"otp has expired ,please register again");
