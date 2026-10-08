@@ -33,6 +33,23 @@ const getExamById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getExams = catchAsync(async (req: Request, res: Response) => {
+  const result = await ExamService.getExams(req.query);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Exams fetched successfully",
+    data: result,
+  });
+});
+
+const getFacultyExams = catchAsync(async (req: Request, res: Response) => {
+  if (!req.user) throw new AppError(httpStatus.UNAUTHORIZED, "User information is missing in the request");
+  const result = await ExamService.getFacultyExams(req.user.userId, req.query);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Faculty exams fetched successfully", data: result });
+});
+
 const updateExam = catchAsync(async (req: Request, res: Response) => {
   const id = getRequiredParam(req.params, "id");
   const result = await ExamService.updateExam(id, req.body);
@@ -59,6 +76,8 @@ const deleteExam = catchAsync(async (req: Request, res: Response) => {
 
 export const ExamController = {
   createExam,
+  getExams,
+  getFacultyExams,
   getExamById,
   updateExam,
   deleteExam,

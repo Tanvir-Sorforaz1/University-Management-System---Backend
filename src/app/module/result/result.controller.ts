@@ -36,6 +36,13 @@ const getMyResults = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getFacultyResults = catchAsync(async (req: Request, res: Response) => {
+  if (!req.user) throw new AppError(httpStatus.UNAUTHORIZED, "User information is missing in the request");
+  const examId = typeof req.query.examId === "string" ? req.query.examId : undefined;
+  const result = await ResultService.getFacultyResults(req.user.userId, examId);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Faculty results fetched successfully", data: result });
+});
+
 const updateResult = catchAsync(async (req: Request, res: Response) => {
   if (!req.user) {
     throw new AppError(httpStatus.UNAUTHORIZED, "User information is missing in the request");
@@ -55,5 +62,6 @@ const updateResult = catchAsync(async (req: Request, res: Response) => {
 export const ResultController = {
   createResult,
   getMyResults,
+  getFacultyResults,
   updateResult,
 };

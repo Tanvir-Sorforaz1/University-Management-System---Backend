@@ -14,6 +14,9 @@ router.post(
   ExamController.createExam
 );
 
+router.get("/", auth(), ExamController.getExams);
+router.get("/mine", auth(Role.FACULTY), ExamController.getFacultyExams);
+
 router.get("/:id", auth(), ExamController.getExamById);
 
 router.patch(

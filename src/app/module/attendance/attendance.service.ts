@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/AppError.js";
 import type { IMarkAttendancePayload } from "./attendance.interface.js";
+import type { IQuery } from "../../interfaces/index.js";
 
 /**
  * Marks (or corrects, same day) one student's attendance. Uses upsert on
@@ -86,8 +87,40 @@ const getAttendanceById = async (id: string) => {
   return attendance;
 };
 
+const getFacultyRoster = async (userId: string, query: IQuery) => {
+  const faculty = await prisma.facultyProfile.findUnique({ where: { userId } });
+  if (!faculty) throw new AppError(httpStatus.NOT_FOUND, "Faculty profile not found for this account");
+  const where = {
+    department: faculty.department,
+    deletedAt: null,
+    ...(typeof query.semesterId === "string" && query.semesterId ? { enrollments: { some: { semesterId: query.semesterId } } } : {}),
+  };
+  const students = await prisma.studentProfile.findMany({
+    where,
+    include: { user: { select: { name: true, email: true } }, enrollments: true },
+    orderBy: { studentId: "asc" },
+  });
+  return students;
+};
+
+const getFacultyAttendance = async (userId: string, query: IQuery) => {
+  const faculty = await prisma.facultyProfile.findUnique({ where: { userId } });
+  if (!faculty) throw new AppError(httpStatus.NOT_FOUND, "Faculty profile not found for this account");
+  return prisma.attendance.findMany({
+    where: {
+      semesterId: typeof query.semesterId === "string" ? query.semesterId : undefined,
+      date: typeof query.date === "string" ? new Date(query.date) : undefined,
+      student: { department: faculty.department },
+    },
+    include: { student: { include: { user: { select: { name: true, email: true } } } }, semester: true },
+    orderBy: { student: { studentId: "asc" } },
+  });
+};
+
 export const AttendanceService = {
   markAttendance,
   getMyAttendance,
   getAttendanceById,
+  getFacultyRoster,
+  getFacultyAttendance,
 };

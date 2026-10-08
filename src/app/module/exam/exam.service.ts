@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/AppError.js";
 import type { ICreateExamPayload, IUpdateExamPayload } from "./exam.interface.js";
+import type { IQuery } from "../../interfaces/index.js";
 
 const createExam = async (payload: ICreateExamPayload, actor: { userId: string }) => {
   const facultyProfile = await prisma.facultyProfile.findUnique({
@@ -41,13 +42,39 @@ const createExam = async (payload: ICreateExamPayload, actor: { userId: string }
 };
 
 const getExamById = async (id: string) => {
-  const exam = await prisma.exam.findUnique({ where: { id } });
+  const exam = await prisma.exam.findUnique({
+    where: { id },
+    include: { semester: true },
+  });
 
   if (!exam || exam.deletedAt) {
     throw new AppError(httpStatus.NOT_FOUND, "Exam not found");
   }
 
   return exam;
+};
+
+const getExams = async (query: IQuery) => {
+  const semesterId = typeof query.semesterId === "string" ? query.semesterId : undefined;
+  return prisma.exam.findMany({
+    where: { deletedAt: null, semesterId },
+    orderBy: { examDate: query.sortOrder === "desc" ? "desc" : "asc" },
+    include: { semester: true },
+  });
+};
+
+const getFacultyExams = async (userId: string, query: IQuery) => {
+  const faculty = await prisma.facultyProfile.findUnique({ where: { userId } });
+  if (!faculty) throw new AppError(httpStatus.NOT_FOUND, "Faculty profile not found for this account");
+  return prisma.exam.findMany({
+    where: {
+      deletedAt: null,
+      createdById: faculty.id,
+      ...(typeof query.semesterId === "string" && query.semesterId ? { semesterId: query.semesterId } : {}),
+    },
+    orderBy: { examDate: query.sortOrder === "desc" ? "desc" : "asc" },
+    include: { semester: true },
+  });
 };
 
 const updateExam = async (id: string, payload: IUpdateExamPayload) => {
@@ -74,6 +101,8 @@ const deleteExam = async (id: string) => {
 
 export const ExamService = {
   createExam,
+  getExams,
+  getFacultyExams,
   getExamById,
   updateExam,
   deleteExam,

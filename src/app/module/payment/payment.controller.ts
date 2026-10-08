@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import httpStatus from "http-status";
+import config from "../../config/index.js";
 import { AppError } from "../../utils/AppError.js";
 import { catchAsync } from "../../utils/catchAsync.js";
 import { getRequiredParam } from "../../utils/getRequiredParam.js";
@@ -22,18 +23,38 @@ const initiatePayment = catchAsync(async (req: Request, res: Response) => {
 });
 
 const handleCallback = catchAsync(async (req: Request, res: Response) => {
-  const result = await PaymentService.handleCallback(req.query);
+  const frontendUrl = config.frontend_url || (config.node_env === "development" ? "http://localhost:3000" : undefined);
+  if (!frontendUrl) {
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, "FRONTEND_URL is not configured");
+  }
 
-  // This project has no frontend to redirect to (backend-only per the
-  // brief), so the callback just returns JSON. If you add a frontend
-  // later, swap this for:
-  //   res.redirect(`${config.frontend_url}/payments/result?status=success`);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Payment finalized successfully",
-    data: result,
-  });
+  const paymentID = typeof req.query.paymentID === "string" ? req.query.paymentID : "";
+  const redirectToStatus = (status: "success" | "cancel" | "failed", internalPaymentId = paymentID) => {
+    const destination = new URL(`/payment/${status}`, frontendUrl);
+    if (internalPaymentId) destination.searchParams.set("paymentID", internalPaymentId);
+    destination.searchParams.set("status", status);
+    res.redirect(303, destination.toString());
+  };
+
+  try {
+    const payment = await PaymentService.handleCallback(req.query);
+    const paymentStatus = String(payment.status).toUpperCase();
+    redirectToStatus(
+      paymentStatus === "SUCCESS" ? "success" : paymentStatus === "CANCELLED" ? "cancel" : "failed",
+      payment.id,
+    );
+  } catch {
+    let internalPaymentId = paymentID;
+    if (paymentID) {
+      try {
+        const payment = await PaymentService.getPaymentByGatewayId(paymentID);
+        internalPaymentId = payment.id;
+      } catch {
+        internalPaymentId = "";
+      }
+    }
+    redirectToStatus(String(req.query.status).toLowerCase() === "cancel" ? "cancel" : "failed", internalPaymentId);
+  }
 });
 
 const getPaymentById = catchAsync(async (req: Request, res: Response) => {

@@ -15,5 +15,12 @@ router.post(
 );
 
 router.get("/my", auth(Role.STUDENT), FeeController.getMyFees);
+router.get("/", auth(Role.ADMIN), FeeController.getAllFees);
+router.patch(
+  "/:id",
+  auth(Role.ADMIN),
+  validateRequest(FeeValidation.UpdateFeeZodSchema),
+  FeeController.updateFee
+);
 
 export const FeeRoutes = router;

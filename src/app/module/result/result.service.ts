@@ -81,6 +81,18 @@ const getMyResults = async (userId: string) => {
   });
 };
 
+const getFacultyResults = async (userId: string, examId?: string) => {
+  const faculty = await prisma.facultyProfile.findUnique({ where: { userId } });
+  if (!faculty) throw new AppError(httpStatus.NOT_FOUND, "Faculty profile not found for this account");
+  const exam = examId ? await prisma.exam.findFirst({ where: { id: examId, createdById: faculty.id, deletedAt: null } }) : undefined;
+  if (examId && !exam) throw new AppError(httpStatus.NOT_FOUND, "Exam not found for this faculty account");
+  return prisma.examResult.findMany({
+    where: { examId: examId || undefined, exam: { createdById: faculty.id } },
+    include: { exam: { include: { semester: true } }, student: { include: { user: { select: { name: true, email: true } } } } },
+    orderBy: { student: { studentId: "asc" } },
+  });
+};
+
 /**
  * Corrects an already-entered result. Always audit-logged with a
  * before/after diff, and always recalculates the transcript afterward.
@@ -134,5 +146,6 @@ const updateResult = async (
 export const ResultService = {
   createResult,
   getMyResults,
+  getFacultyResults,
   updateResult,
 };

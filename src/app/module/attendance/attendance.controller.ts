@@ -35,6 +35,18 @@ const getMyAttendance = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getFacultyRoster = catchAsync(async (req: Request, res: Response) => {
+  if (!req.user) throw new AppError(httpStatus.UNAUTHORIZED, "User information is missing in the request");
+  const result = await AttendanceService.getFacultyRoster(req.user.userId, req.query);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Faculty roster fetched successfully", data: result });
+});
+
+const getFacultyAttendance = catchAsync(async (req: Request, res: Response) => {
+  if (!req.user) throw new AppError(httpStatus.UNAUTHORIZED, "User information is missing in the request");
+  const result = await AttendanceService.getFacultyAttendance(req.user.userId, req.query);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Attendance fetched successfully", data: result });
+});
+
 const getAttendanceById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   if (typeof id !== "string") {
@@ -54,5 +66,7 @@ const getAttendanceById = catchAsync(async (req: Request, res: Response) => {
 export const AttendanceController = {
   markAttendance,
   getMyAttendance,
+  getFacultyRoster,
+  getFacultyAttendance,
   getAttendanceById,
 };

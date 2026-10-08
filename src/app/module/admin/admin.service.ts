@@ -218,6 +218,14 @@ const getAllUsers = async (query: IQuery) => {
       take,
       orderBy: orderBy ?? { createdAt: "desc" },
       omit: { password: true },
+      include: {
+        studentProfile: {
+          select: { id: true, studentId: true, department: true, deletedAt: true },
+        },
+        facultyProfile: {
+          select: { id: true, facultyId: true, department: true, isDepartmentHead: true, deletedAt: true },
+        },
+      },
     }),
     prisma.user.count({ where }),
   ]);

@@ -15,6 +15,7 @@ router.post(
 );
 
 router.get("/my", auth(Role.STUDENT), ResultController.getMyResults);
+router.get("/", auth(Role.FACULTY), ResultController.getFacultyResults);
 
 router.patch(
   "/:id",

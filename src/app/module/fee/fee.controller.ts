@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import httpStatus from "http-status";
 import { AppError } from "../../utils/AppError.js";
 import { catchAsync } from "../../utils/catchAsync.js";
+import { getRequiredParam } from "../../utils/getRequiredParam.js";
 import { sendResponse } from "../../utils/sendResponse.js";
 import { FeeService } from "./fee.service.js";
 
@@ -32,7 +33,33 @@ const getMyFees = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllFees = catchAsync(async (req: Request, res: Response) => {
+  const { fees, meta } = await FeeService.getAllFees(req.query);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Fee invoices fetched successfully",
+    data: fees,
+    meta,
+  });
+});
+
+const updateFee = catchAsync(async (req: Request, res: Response) => {
+  const id = getRequiredParam(req.params, "id");
+  const fee = await FeeService.updateFee(id, req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Fee invoice updated successfully",
+    data: fee,
+  });
+});
+
 export const FeeController = {
   createFee,
   getMyFees,
+  getAllFees,
+  updateFee,
 };

@@ -15,6 +15,7 @@ import { transporter } from "../../lib/nodemailer.js";
 import crypto from "node:crypto";
 
 
+
 /** Placeholder generator — swap for a real roll-number scheme. */
 const generateStudentId = () => `STU-${Date.now().toString(36).toUpperCase()}`;
 const OTP_EXPIRATION_SECOND =5*60; 
@@ -75,7 +76,6 @@ const registerStudent = async (payload: IRegisterStudentPayload) => {
   const otp = crypto.randomInt(100000, 1000000).toString();
 
   await connectRedis();
-
   await redisClient.set(otpKeyFor(email), otp, {
     expiration: { type: "EX", value: OTP_EXPIRATION_SECOND },
   });
@@ -110,6 +110,7 @@ const registerStudent = async (payload: IRegisterStudentPayload) => {
     subject: "Verify your email — University Management System",
     html,
   });
+
 };
 
 
@@ -124,7 +125,6 @@ const verifyStudentEmail=async(payload:IverifyEmailPayload)=>{
   }
 
   await connectRedis();
-
   const redisOtp =await redisClient.get(otpKeyFor(email));
   if(!redisOtp){
     throw new AppError(httpStatus.BAD_REQUEST,"otp has expired ,please register again");

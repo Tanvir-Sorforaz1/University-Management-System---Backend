@@ -15,6 +15,8 @@ router.post(
 );
 
 router.get("/my", auth(Role.STUDENT), AttendanceController.getMyAttendance);
+router.get("/roster", auth(Role.FACULTY), AttendanceController.getFacultyRoster);
+router.get("/", auth(Role.FACULTY), AttendanceController.getFacultyAttendance);
 router.get("/:id", auth(Role.FACULTY, Role.ADMIN), AttendanceController.getAttendanceById);
 
 export const AttendanceRoutes = router;

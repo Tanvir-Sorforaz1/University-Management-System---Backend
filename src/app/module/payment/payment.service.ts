@@ -154,7 +154,27 @@ const handleCallback = async (query: IBkashCallbackQuery) => {
 };
 
 const getPaymentById = async (id: string) => {
-  const payment = await prisma.payment.findUnique({ where: { id } });
+  const payment = await prisma.payment.findUnique({
+    where: { id },
+    include: {
+      fee: { include: { semester: true } },
+      student: {
+        include: {
+          user: { select: { name: true, email: true } },
+        },
+      },
+    },
+  });
+
+  if (!payment) {
+    throw new AppError(httpStatus.NOT_FOUND, "Payment not found");
+  }
+
+  return payment;
+};
+
+const getPaymentByGatewayId = async (gatewayPaymentId: string) => {
+  const payment = await prisma.payment.findUnique({ where: { gatewayPaymentId } });
 
   if (!payment) {
     throw new AppError(httpStatus.NOT_FOUND, "Payment not found");
@@ -167,4 +187,5 @@ export const PaymentService = {
   initiatePayment,
   handleCallback,
   getPaymentById,
+  getPaymentByGatewayId,
 };
